@@ -1,16 +1,9 @@
-/*Copyright (C) Joshua Tenner - 2013
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 var expando = function() {
     var regex = {
-        id: /[\#]([a-z\-\_0-9]*)/i,
-        cls: /[\.]([a-z\-\_0-9]*)/gi,
-        tag: /^[a-z]*/gi,
-        cnt: /[\*]([0-9]*)/
+        id: /\#([a-z][a-z\-\_0-9]*)/i,
+        cls: /\.([a-z][a-z\-\_0-9]*)/gi,
+        tag: /^[\s]*([a-z]*)/i,
+        cnt: /\*([0-9]*)/
     }, module = {
         node: function() {
             this.tag = "div";
@@ -24,10 +17,10 @@ var expando = function() {
         expand: function(expression, strict) {
             var tree = module.treeify(expression.split(""));
             var result = "";
-            for (var i = 0; i < tree.length; i++) {
-                tree[i].expand();
-                result += module.EM(tree[i], strict);
-            }
+            tree.forEach(function(branch) {
+                branch.expand();
+                result += module.EM(branch, strict);
+            });
             return result;
         },
         treeify: function(bytes) {
@@ -98,16 +91,16 @@ var expando = function() {
             start += node.modifiers ? " " + node.modifiers : "";
             if (node.classList.length) {
                 start += ' class="';
-                for (var i = 0; i < node.classList.length; i++) {
-                    start += (i > 0 ? " " : "") + node.classList[i].match(/[\.]([a-z\_\-]*)/i)[1];
-                }
+                node.classList.forEach(function(child, i) {
+                    start += (i > 0 ? " " : "") + child.match(/[\.]([a-z\_\-]*)/i)[1];
+                });
                 start += '"';
             }
             start += (noEndTag && strict && !node.children.length ? " /" : "") + ">";
             if (node.children.length) {
-                for (var i = 0; i < node.children.length; i++) {
-                    start += module.EM(node.children[i], strict, tabs + 1);
-                }
+                node.children.forEach(function(child) {
+                    start += module.EM(child, strict, tabs + 1);
+                });
             }
             start += !noEndTag || node.children.length ? "</" + node.tag + ">" : "";
             var repeat = start;
@@ -119,9 +112,13 @@ var expando = function() {
     };
     module.node.prototype.expand = function() {
         var x = this.expansion;
-        this.id = (x.match(regex.id) ? x.match(regex.id)[1] : this.id) || this.id;
-        this.tag = (x.match(regex.tag) ? x.match(regex.tag)[0] : this.tag) || this.tag;
+        this.id = ((x.match(regex.id) ? x.match(regex.id)[1] : this.id) || this.id).trim();
+        this.tag = ((x.match(regex.tag) ? x.match(regex.tag)[0] : this.tag) || this.tag).trim();
         this.classList = x.match(regex.cls) || [];
+        var cl = this.classList;
+        for (var i = 0; i < cl.length; i++) {
+            cl[i] = cl[i].trim();
+        }
         this.count = x.match(regex.cnt) ? parseInt(x.match(regex.cnt)[1]) : 1;
         if (this.children) for (var i = 0; i < this.children.length; i++) {
             this.children[i].expand();
