@@ -1,11 +1,9 @@
-
-
 var expando = (function(){
 	var regex = {
 		id: /[\#]([a-z\-\_0-9]*)/i,
 		cls: /[\.]([a-z\-\_0-9]*)/ig,
 		tag: /^[a-z]*/ig,
-		cnt: /[\*][0-9]*/
+		cnt: /[\*]([0-9]*)/
 	},
 	module = {
 		node: function(){
@@ -15,6 +13,7 @@ var expando = (function(){
 			this.modifiers	= "";
 			this.expansion  = ""; 
 			this.children	= [];
+			this.count = 1;
 		},
 		expand: function(expression, strict){
 			var tree = module.treeify(expression.split(""));
@@ -26,7 +25,7 @@ var expando = (function(){
 			return result;
 		},
 		treeify: function(bytes){
-			var read = "", currentExpansion = "", nodelist = [], index = 0;
+			var read = "", nodelist = [], index = 0;
 			while(read = bytes.shift()){
 				if(typeof nodelist[index] === "undefined"){
 					nodelist[index] = new module.node();
@@ -41,11 +40,19 @@ var expando = (function(){
 						index++;
 						break;
 					case "[":
-						var reading = true;
-						while(reading){//escape modifiers because anything goes here anyway
-							read = bytes.shift()
-							nodelist[index].modifiers += !(read == "]") ? read : "";
-							reading = !(read == "]");
+						var ignoreNext = false, reading = true;
+						
+						while(bytes.length > 0 && reading){//escape modifiers because anything goes here anyway
+							read = bytes.shift();
+							if(ignoreNext){
+								nodelist[index].modifiers += read;
+								ignoreNext = false;
+							}else{
+								nodelist[index].modifiers += !(read == "]")&&!(read == "\\") ? read : "";
+								ignoreNext = (read == "\\");
+								reading = !(read == "]");
+							}
+							console.log({modtext: nodelist[index].modifiers, ignorenext: ignoreNext, reading: reading, read: read});
 						}
 						break;
 					default:
@@ -96,6 +103,9 @@ var expando = (function(){
 				}
 			}
 			start += ((!noEndTag||node.children.length)?"</"+node.tag+">":"");
+			for(var i = 2; i<=node.count; i++){
+				start += start;
+			}
 			return start;
 		}
 	};
@@ -105,11 +115,12 @@ var expando = (function(){
 		this.id = (x.match(regex.id) ? x.match(regex.id)[1] : this.id) || this.id;
 		this.tag = (x.match(regex.tag) ? x.match(regex.tag)[0] : this.tag) || this.tag;
 		this.classList = x.match(regex.cls)||[];
-		
+		this.count = (x.match(regex.cnt) ? parseInt(x.match(regex.tag)[0]) : 1);
 		if(this.children)
 		for(var i = 0;i < this.children.length;i++){
 			this.children[i].expand();
 		}
 	};
 	return module;
-})()
+})();
+
