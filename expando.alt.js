@@ -44,6 +44,7 @@ var expando  = (function(){
 		id: /\#([a-z][a-z0-9\-\_]*)/ig
 	};
 	var treeify = function(bytes){
+		console.log(bytes);
 		var read, nodelist = [], index = 0;
 		if(!nodelist[index]){
 			nodelist[index] = new node();
@@ -61,9 +62,8 @@ var expando  = (function(){
 				case "[":
 					var esc = false;
 					while(read = bytes.shift() && (esc || read !== "]")){
-						esc = false;
 						nodelist[index].mods += (!(read==="\\") ? read : "");
-						esc = (read==="\\");
+						esc = esc?false:(read==="\\");
 					}
 				default:
 					nodelist[index].expansion += read;
