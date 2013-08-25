@@ -63,6 +63,9 @@ var expando = function() {
             return nodelist;
         },
         EM: function(node, strict, tabs) {
+            if(node.expansion.trim()==="" || node.children.length === 0){
+               return "";
+            }
             tabs = tabs || 0;
             var noEndTag = false;
             switch (node.tag.toLowerCase()) {
