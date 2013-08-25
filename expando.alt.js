@@ -1,137 +1,128 @@
-var expando = (function() {
-    var node = function() {
-        this.tag = "div";
-        this.id = "";
-        this.classList = [];
-        this.children = [];
-        this.mods = "";
-        this.expansion = "";
-        this.literal = "";
-    };
-    node.prototype.expand = function() {
-        if (this.literal) return this.literal;
-        var res = "<" + this.tag + (this.id ? ' id="' + this.id + '"' : "") + (this.classList.length ? ' class="' + this.classList.join(' ') + '"' : "") + (this.mods ? " " + this.mods : "") + ">"
-        var read, i = -1;
-        while (read = this.children[++i]) {
-            res += read.expand();
-        }
-        switch (this.tag.toLowerCase()) {
-        case "link":
-        case "meta":
-        case "img":
-        case "area":
-        case "source":
-        case "br":
-        case "basefront":
-        case "col":
-        case "hr":
-        case "input":
-        case "keygen":
-        case "embed":
-        case "keygen":
-        case "param":
-        case "source":
-        case "track":
-        case "wbr":
-            break;
-        default:
-            res += "</" + this.tag + ">"
-        }
-        return res;
-    }
+var expando = function() {
     var regex = {
-        cls: /\.([a-z][a-z0-9\-\_]*)/ig,
-        id: /\#([a-z][a-z0-9\-\_]*)/ig,
-    	tag: /^[\s]*([a-z]*)/ig
-    };
-    var treeify = function(expansion){
-        var i = -1;
-        var subtree = function(){
-			
-            // This function only cares about making the tree and putting the text into the right context.
-            var nodelist = [], index = 0, read = "";
-            while(read = expansion[++i]){
-                if(!nodelist[index])
-                    nodelist[index] = new node();
-                switch(read){
-                    case "{":
-                        //concat multiple expansions
-                        nodelist[index].children.push.apply(nodelist[index].children, subtree());
-						
-                        //prevent expansion spill over 
-                        nodelist[index].expansion += " ";
-                        break;
-                    case "}":
-                        return nodelist;
-                    case "(":
-                        //text literal child, lex all the text into a child literal
-                        var escaped = false, childnode = new node(); 
-                        while(read = expansion[++i] && (read !== ')' || escaped)){
-                            childnode.literal += read;
-                            escaped = escaped ? false : read === "\\";
+        id: /\#([a-z][a-z\-\_0-9]*)/i,
+        cls: /\.([a-z][a-z\-\_0-9]*)/gi,
+        tag: /^[\s]*([a-z]*)/i,
+        cnt: /\*([0-9]*)/
+    }, module = {
+        node: function() {
+            this.tag = "div";
+            this.classList = [];
+            this.id = "";
+            this.modifiers = "";
+            this.expansion = "";
+            this.children = [];
+            this.count = 1;
+        },
+        expand: function(expression, strict) {
+            var tree = module.treeify(expression);
+            var result = "";
+            tree.forEach(function(branch) {
+                branch.expand();
+                result += module.EM(branch, strict);
+            });
+            return result;
+        },
+        treeify: function(bytes) {
+            var read = "", nodelist = [], index = 0, i = -1;
+            while (read = bytes[++i]) {
+                if (typeof nodelist[index] === "undefined") {
+                    nodelist[index] = new module.node();
+                }
+                switch (read) {
+                  case "{":
+                    nodelist[index].children = module.treeify(bytes);
+                    break;
+
+                  case "}":
+                    return nodelist;
+
+                  case "+":
+                    index++;
+                    break;
+
+                  case "[":
+                    var ignoreNext = false, reading = true;
+                    while (bytes.length > 0 && reading) {
+                        read = bytes.shift();
+                        if (ignoreNext) {
+                            nodelist[index].modifiers += read;
+                            ignoreNext = false;
+                        } else {
+                            nodelist[index].modifiers += !(read == "]") && !(read == "\\") ? read : "";
+                            ignoreNext = read == "\\";
+                            reading = !(read == "]");
                         }
-                        nodelist[index].push(childnode);
-                        //prevent class/id spillover
-                        nodelist[index].expansion += " ";
-                        break;
-                    case "[":
-                        var escaped = false; 
-                        //prevent mods from concatenating unnecessarily
-                        childnode.mods += " ";
-                        while(read = expansion[++i] && (read !== ']' || escaped)){
-                            childnode.mods += read;
-                            escaped = escaped ? false : read === "\\";
-                        }
-                        //prevent class/id spillover
-                        nodelist[index].expansion += " ";
-                        break;
-                    case "+":
-                        index++;
-                        break;
-                    default:
-                       nodelist[index].expansion += read; 
+                    }
+                    break;
+
+                  default:
+                    nodelist[index].expansion += read;
                 }
             }
             return nodelist;
-        };
-        return subtree();
-    }, build = function(tree){
-        var index = 0, read, readstr = "";
-        while(read = tree[index++]){
-            if(!read.literal){
-                while(readstr = regex.cls.exec(read.expansion)){
-                    read.classList.push(readstr[1]);
-                }
-                if(readstr = regex.id.exec(read.expansion)){
-                    read.id = readstr[1];
-                }
-		if(readstr = regex.tag.exec(read.expansion)){
-			read.tag = readstr[1];
-		}
-                if(read.children.length){
-                    build(read.children);
-                }
+        },
+        EM: function(node, strict, tabs) {
+            tabs = tabs || 0;
+            var noEndTag = false;
+            switch (node.tag.toLowerCase()) {
+              case "link":
+              case "meta":
+              case "img":
+              case "area":
+              case "source":
+              case "br":
+              case "basefront":
+              case "col":
+              case "hr":
+              case "input":
+              case "keygen":
+              case "embed":
+              case "keygen":
+              case "param":
+              case "source":
+              case "track":
+              case "wbr":
+                noEndTag = true;
+                break;
             }
+            var start = "<" + node.tag;
+            start += node.id ? ' id="' + node.id + '"' : "";
+            start += node.modifiers ? " " + node.modifiers : "";
+            if (node.classList.length) {
+                start += ' class="';
+                node.classList.forEach(function(child, i) {
+                    start += (i > 0 ? " " : "") + child.match(/[\.]([a-z\_\-]*)/i)[1];
+                });
+                start += '"';
+            }
+            start += (noEndTag && strict && !node.children.length ? " /" : "") + ">";
+            if (node.children.length) {
+                node.children.forEach(function(child) {
+                    start += module.EM(child, strict, tabs + 1);
+                });
+            }
+            start += !noEndTag || node.children.length ? "</" + node.tag + ">" : "";
+            var repeat = start;
+            for (var i = 2; i <= node.count; i++) {
+                start += repeat;
+            }
+            return start;
         }
-		return tree;
     };
-    var module = {
-        expand: function(expansion) {
-            //API entrance
-            return module.parse(module.lex(expansion));
-            
-        },
-        lex: function(expansion){
-            return build(treeify(expansion));
-        },
-        parse: function(tree){
-            var node, res = "", index = -1;
-            while (node = tree[++index]) {
-                res += node.expand();
-            }
-            return res;
+    module.node.prototype.expand = function() {
+        var x = this.expansion;
+        this.id = ((x.match(regex.id) ? x.match(regex.id)[1] : this.id) || this.id).trim();
+        this.tag = ((x.match(regex.tag) ? x.match(regex.tag)[0] : this.tag) || this.tag).trim();
+        this.classList = x.match(regex.cls) || [];
+        var cl = this.classList;
+        for (var i = 0; i < cl.length; i++) {
+            cl[i] = cl[i].trim();
         }
-    }
-    //expose the api
+        this.count = x.match(regex.cnt) ? parseInt(x.match(regex.cnt)[1]) : 1;
+        if (this.children) for (var i = 0; i < this.children.length; i++) {
+            this.children[i].expand();
+        }
+    };
     return module;
-})()
+}();
