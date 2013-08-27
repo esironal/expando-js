@@ -29,9 +29,8 @@ var expandoalt = function(){
 	},
 	EM = function(n, strict, tabs) {
 		var noEndTag = false, read;
-		if(n.expansion.indexOf("=") === 0){
-			read = /\=(.*)\}/.exec(n.expansion)
-			return read ? read[1] : "";
+		if(read = /^\=(.*)\}/.exec(n.expansion)){
+			return read[1];
 		}
 		tabs = tabs || 0;
 		switch (n.tag.toLowerCase()) {
