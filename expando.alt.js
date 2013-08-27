@@ -85,8 +85,8 @@ var expandoalt = function(){
 				case "+":
 					index++;
 			}
-			return nodelist;
 		}
+		return nodelist;
 	},
 	parse = function(tree){
 		var res = "", read;
