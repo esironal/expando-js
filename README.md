@@ -14,7 +14,7 @@ This library creates a global object called expando and is powerful enough to pe
 
 Examples:
 
-Expansion | Code | Result (minified)
+Expansion | Result (minified)
 ---|---|---
 `.test{.child-test}`| `<div class="test"><div class="child-test"></div></div>`
 `input[required]`|`<input required>`
