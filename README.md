@@ -52,6 +52,6 @@ Notes:
 ======
 This library was designed for size and speed as a templating engine. 
 
-Check out [jsperf Emmet vs Expando performance](http://jsperf.com/emmet-vs-expando/2).
+Check out [jsperf Emmet vs Expando performance](http://jsperf.com/emmet-vs-expando/3).
 
 Enjoy!
