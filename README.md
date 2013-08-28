@@ -16,40 +16,41 @@ Examples:
 
 Expansion | Code | Result (minified)
 ---|---|---
-`.test{.child-test}`|`expando.expand(".test{.child-test}")`| `<div class="test"><div class="child-test"></div></div>`
-`input[required]`|`expando.expand("input[required]")`|`<input required>` 
+`.test{.child-test}`| `<div class="test"><div class="child-test"></div></div>`
+`input[required]`|`<input required>`
+`{=Escaped Text}`|`<div>Escaped Text</div>`
 
 Note that elements that _never have child elements_ or _don't need a closing tag_ will automatically render without one unless they have children.
 
 API usage
 =========
 ```javascript
-expando.expand(expansion, strict/*used for xhtml*/);
+expando(expansion,  templateobj); 
+//or
+var cachedExpression = expando.compile(expression);
+cachedExpression(templateobj);
 ```
 
 And there it is, very easy to use.
 
 Expansion Syntax
 ================
-```tagname``` _defaults to div if not specified_
+Combinator | Description
+---|---
+`[attributes]`| This sequence will place `attributes` into the current element context
+`.test` | Identifies a class
+`%property` | If a templateobj is specified, it will place the property value inline into the expansion
+`{expansion}` | Place the `expansion` into the contents of the current element
+`+` | Sibling Combinator, ex: `div+div` results in 2 divs. `div div` _does not work_.
 
-```.class1``` _creates a div element with a class "class1"_
+Escape Sequences
+================
+In order to use a combinator as part of the text in a child element, the text must be escaped.  Future versions will automatically escape text produced by the templating engine.
 
-```section.class1``` _creates a section element with a class "class1"_
-
-```#id``` _creates a div element with an id "id"_
-
-```section{child_expansion}``` _creates a section element with children specified by the child expansion_
-
-```ul{li*8{a[href="#target"]}}``` _creates a list with 8 list items that each contain an anchor element with a "href" parameter_
 
 Notes:
 ======
-Anything between ```[``` and ```]``` will be put into the element character for character and it saves the compiler a TON of time.  The only exception to this is when the ] character is escaped.  It must be escaped like this: ```\\]```.
-
-Pull requests welcome, issues/possible performance gains testing would be appreciated.
-
-I plan on adding a few more customization features that may slow down expando's performance for usability.  The goal was to get expando to the point where it became an incredibly quick templating engine, but for now, I want to keep it small and fun.
+This library was designed for size and speed as a templating engine. 
 
 Check out [jsperf Emmet vs Expando performance](http://jsperf.com/emmet-vs-expando/2).
 
