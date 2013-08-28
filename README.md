@@ -45,7 +45,11 @@ Combinator | Description
 
 Escape Sequences
 ================
-In order to use a combinator as part of the text in a child element, the text must be escaped.  Future versions will automatically escape text produced by the templating engine.
+In order to use a combinator as part of the text in a child element, the text must be escaped using `\\`.  Future versions will automatically escape text produced by the templating engine.
+
+Example `\\+ \\[ \\] \\{ \\} \\%`
+
+`input data-text="\\[\\]"`
 
 
 Notes:
