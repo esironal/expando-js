@@ -89,7 +89,6 @@ var expandoalt = function(){
 					push.apply(nodelist[index].children, lexf(instructions));
 					break;
 				case "}":
-					console.log(nodelist);
 					return nodelist;
 				case "\\":
 					if(read = instructions[0]){
@@ -124,6 +123,11 @@ var expandoalt = function(){
 			});
 		}
 		return parse(lexf(expansion.match(lex)))||"<div></div>";		
+	};
+	expando.prototype.compile = function(expansion){
+		return Function.prototype.bind ? expando.bind(this, expansion) : function(obj){
+			return expando(expansion, obj);
+		};
 	};
 	node.prototype.expand = function() {
         var x = this.expansion, that = this;		
