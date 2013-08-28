@@ -124,7 +124,7 @@ var expando = function(){
 		}
 		return parse(lexf(expansion.match(lex)))||"<div></div>";		
 	};
-	expando.prototype.compile = function(expansion){
+	expando.compile = function(expansion){
 		return Function.prototype.bind ? expando.bind(this, expansion) : function(obj){
 			return expando(expansion, obj);
 		};
