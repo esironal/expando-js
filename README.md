@@ -49,7 +49,7 @@ In order to use a combinator as part of the text in a child element, the text mu
 
 Example `\\+ \\[ \\] \\{ \\} \\%`
 
-`input data-text="\\[\\]"`
+`input [data-text="\\[\\]"]`
 
 
 Notes:
