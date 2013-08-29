@@ -124,17 +124,17 @@ var expando = function(){
 		}
 		return parse(lexf(expansion.match(lex)))||"<div></div>";		
 	};
-	expando.prototype.compile = function(expansion){
+	expando.compile = function(expansion){
 		return Function.prototype.bind ? expando.bind(this, expansion) : function(obj){
 			return expando(expansion, obj);
 		};
 	};
 	node.prototype.expand = function() {
-        var x = this.expansion, that = this;		
-		this.id = ((x.match(id) ? x.match(id)[1] : this.id) || this.id).trim();
-		this.tag = ((x.match(tag) ? x.match(tag)[0] : this.tag) || this.tag).trim();
+        var x = this.expansion, that = this, read;		
+		this.id = (((read = x.match(id)) ? read[1] : this.id) || this.id).trim();
+		this.tag = (((read = x.match(tag)) ? read[0] : this.tag) || this.tag).trim();
 		this.classList = x.match(cls) || [];
-		this.count = x.match(cnt) ? parseInt(x.match(cnt)[1]) : 1;
+		this.count = (read = x.match(cnt)) ? parseInt(read[1]) : 1;
 		replace.call(x, prms, function(match, $1){
 			that.modifiers += $1 + " ";
 		});
