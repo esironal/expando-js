@@ -1,4 +1,4 @@
-var expando2 = function(){
+var expando = function(){
 	var lex = /([^\{\}\+\\]*)([\\\+\{\}])?/gm,
 		id = /\#([a-z][a-z\-\_0-9]*)/i,
         cls = /\.([a-z][a-z\-\_0-9]*)/gi,
