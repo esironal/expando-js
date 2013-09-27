@@ -2,12 +2,19 @@
   var expando, node, tokenize, tokenizer, treeify;
 
   expando = function(expansion) {
-    return (new treeify(expansion)).generateNodes();
+    var temp;
+    temp = "";
+    if ((temp = expando.cache[expansion]) === void 0) {
+      expando.cache[expansion] = temp = (new treeify(expansion)).generateNodes();
+    }
+    return temp;
   };
 
   tokenize = function(expansion) {
     return new tokenizer(expansion);
   };
+
+  expando.cache = [];
 
   if (!(typeof window === "undefined")) {
     window.expando = expando;
@@ -233,13 +240,9 @@
   })();
 
   treeify = (function() {
-    var cr, lf, push;
+    var push;
 
     push = Array.prototype.push;
-
-    cr = "\n";
-
-    lf = "\r";
 
     treeify.prototype.generateNodes = function(_index) {
       var child, expansion, index, length, mynode, nodeindex, nodelist, ref, token, tokens, _ref;
