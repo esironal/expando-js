@@ -17,8 +17,6 @@
     modules.exports = expando;
   }
 
-  window.tokenizer = tokenize;
-
   node = (function() {
     var repeat, voidElements;
 
