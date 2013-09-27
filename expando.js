@@ -147,7 +147,7 @@
           token: _char,
           type: "COMBINATOR"
         };
-      }
+      } 
       if (isA(_char)) {
         return this.alphaNumericRead("TAG");
       }
