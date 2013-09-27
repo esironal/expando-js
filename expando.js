@@ -240,13 +240,9 @@
   })();
 
   treeify = (function() {
-    var cr, lf, push;
+    var push;
 
     push = Array.prototype.push;
-
-    cr = "\n";
-
-    lf = "\r";
 
     treeify.prototype.generateNodes = function(_index) {
       var child, expansion, index, length, mynode, nodeindex, nodelist, ref, token, tokens, _ref;
