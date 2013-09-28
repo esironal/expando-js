@@ -1,27 +1,72 @@
 (function() {
-  var expando, node, tokenize, tokenizer, treeify;
+  var callbacks, expando, filters, ls, node, setLS, tokenizer, treeify;
+
+  ls = false;
+
+  callbacks = [];
+
+  filters = [];
+
+  setLS = function() {
+    var val;
+    val = JSON.stringify(expando.cache);
+    if (localStorage.expandocache !== val) {
+      return localStorage.expandocache = val;
+    }
+  };
 
   expando = function(expansion) {
-    var temp;
+    var callback, filter, temp, _i, _j, _len, _len1;
     temp = "";
     if ((temp = expando.cache[expansion]) === void 0) {
       expando.cache[expansion] = temp = (new treeify(expansion)).generateNodes();
+      if (ls) {
+        setTimeout(setLS, 0);
+      }
+    }
+    if (filters.length > 0) {
+      for (_i = 0, _len = filters.length; _i < _len; _i++) {
+        filter = filters[_i];
+        temp = filter(temp);
+      }
+    }
+    if (callbacks.length > 0) {
+      for (_j = 0, _len1 = callbacks.length; _j < _len1; _j++) {
+        callback = callbacks[_j];
+        callback(temp);
+      }
     }
     return temp;
   };
 
-  tokenize = function(expansion) {
-    return new tokenizer(expansion);
+  expando.cache = [];
+
+  expando.addFilter = function(filter) {
+    return filters.push(filter);
   };
 
-  expando.cache = [];
+  expando.addCallback = function(callback) {
+    return callbacks.push(callback);
+  };
 
   if (!(typeof window === "undefined")) {
     window.expando = expando;
+    try {
+      ls = "localStorage" in window && window["localStorage"] !== null;
+    } catch (_error) {
+
+    }
+    if (ls) {
+      try {
+        expando.cache = JSON.parse(localStorage.expandocache);
+      } catch (_error) {
+        expando.cache = [];
+      }
+    }
   }
 
-  if (!(typeof module === "undefined") && !(typeof modules.exports === "undefined")) {
-    modules.exports = expando;
+  if (!(typeof module === "undefined") && !(typeof module.exports === "undefined")) {
+    module.exports = expando;
   }
 
   node = (function() {
