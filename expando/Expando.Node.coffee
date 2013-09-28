@@ -19,6 +19,8 @@ class node
       return @literal
     {tag, id, attributes, count, children} = {@tag, @id, @attributes, @count, @children}
     classes = @classList.join ' '
+    return "" if classes is "" and tag is "" and id is "" and attributes is "" and children.length is 0 and count is 1 
+    
     if tag == ""
       tag = "div"
     endTag = (voidElements.indexOf (" "+tag+" ")) == -1

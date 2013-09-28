@@ -1,7 +1,5 @@
 class treeify
   push = Array::push
-  cr = "\n"
-  lf = "\r"
   generateNodes: (_index)->
     if @expansion
       return @expansion

@@ -64,6 +64,9 @@
         children: this.children
       }, tag = _ref.tag, id = _ref.id, attributes = _ref.attributes, count = _ref.count, children = _ref.children;
       classes = this.classList.join(' ');
+      if (classes === "" && tag === "" && id === "" && attributes === "" && children.length === 0 && count === 1) {
+        return "";
+      }
       if (tag === "") {
         tag = "div";
       }
